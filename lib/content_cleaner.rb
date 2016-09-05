@@ -48,6 +48,20 @@ module ContentCleaner
             end
           end
         end
+
+        if %r{(<br */?>\s*){2,}}.match(p.inner_html)
+          content_parts = p.inner_html.split(%r{(<br */?>\s*){2,}})
+          content_parts.each_with_index do |cp, index|
+            if %r{(<br */?>\s*)}.match(cp)
+              next
+            end
+            if index == 0
+              p.inner_html = cp
+            else
+              last_node = last_node.after("<p>#{cp}</p>")
+            end
+          end
+        end
       end
     end
   end

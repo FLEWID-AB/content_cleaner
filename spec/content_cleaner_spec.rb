@@ -74,4 +74,14 @@ describe ContentCleaner do
 
     expect(cleaned_content(html1)).to eq(cleaned_value(expected1))
   end
+
+  it 'replaces multiple <br> tags by paragraphs' do
+    html = <<-HTML
+      <p>Lorem ipsum dolor sit amet.<br><br>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+    HTML
+    expected = <<-HTML
+      <p>Lorem ipsum dolor sit amet.</p><p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+    HTML
+    expect(cleaned_content(html)).to eq(cleaned_value(expected))
+  end
 end
