@@ -6,6 +6,7 @@ module ContentCleaner
     def initialize(content)
       @doc = Nokogiri::HTML.parse(content)
       clean_content
+      clean_figures
     end
 
     def content_html
@@ -62,6 +63,13 @@ module ContentCleaner
             end
           end
         end
+      end
+    end
+
+    def clean_figures
+      figures = @doc.xpath('//figure/figure')
+      figures.each do |f|
+        f.parent.swap(f.to_html)
       end
     end
   end

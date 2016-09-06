@@ -84,4 +84,24 @@ describe ContentCleaner do
     HTML
     expect(cleaned_content(html)).to eq(cleaned_value(expected))
   end
+
+  it "removes double figure tags" do
+    html1 = <<-HTML
+        <p><figure><figure><img src="example.jpg"></figure></figure></p>
+    HTML
+    expected1 = <<-HTML
+        <figure><img src="example.jpg"></figure>
+    HTML
+    expect(cleaned_content(html1)).to eq(cleaned_value(expected1))
+  end
+
+  it "removes double p tags" do
+    html1 = <<-HTML
+        <p><p>text</p></p>
+    HTML
+    expected1 = <<-HTML
+        <p>text</p>
+    HTML
+    expect(cleaned_content(html1)).to eq(cleaned_value(expected1))
+  end
 end
