@@ -104,4 +104,30 @@ describe ContentCleaner do
     HTML
     expect(cleaned_content(html1)).to eq(cleaned_value(expected1))
   end
+
+  it 'keeps inline javascript' do
+    html = <<-HTML
+      <p>
+    <script type="text/javascript" src="//cdn.playbuzz.com/widget/feed.js"></script>
+</p>
+<div class="pb_feed"></div>
+    HTML
+    expected = <<-HTML
+
+    <script type="text/javascript" src="//cdn.playbuzz.com/widget/feed.js"></script>
+
+<div class="pb_feed"></div>
+    HTML
+    expect(cleaned_content(html)).to eq(cleaned_value(expected))
+  end
+
+  it 'wraps all iframes with a figure tag' do
+    html = <<-HTML
+      <iframe src="example.com"></iframe>
+    HTML
+    expected = <<-HTML
+      <figure class="op-interactive"><iframe src="example.com"></iframe></figure>
+    HTML
+    expect(cleaned_content(html)).to eq(cleaned_value(expected))
+  end
 end

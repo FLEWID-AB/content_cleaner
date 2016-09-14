@@ -3,6 +3,11 @@ require 'nokogiri'
 
 module ContentCleaner
   class Content
+
+    MEDIA_ELEMENTS = %w(img iframe blockquote)
+    SOCIAL_SERVICES = %w(instagram facebook twitter vine youtube)
+    BLOCKQUOTES = %w(instagram-media twitter-tweet)
+
     def initialize(content)
       @doc = Nokogiri::HTML.parse(content)
       clean_content
@@ -16,6 +21,7 @@ module ContentCleaner
     protected
     def clean_content
       clean_paragraphs
+      replace_media
     end
 
     def clean_paragraphs
@@ -62,6 +68,84 @@ module ContentCleaner
               last_node = last_node.after("<p>#{cp}</p>")
             end
           end
+        end
+      end
+    end
+
+    def replace_media
+      MEDIA_ELEMENTS.each do |tag|
+        # surround iframes and images
+        elements = @doc.xpath("//#{tag}")
+        elements.each do |element|
+          # BlockQuotes
+          if element.matches? 'blockquote'
+            cls_name = element.attribute("class").nil? ? "" : element.attribute("class").value.to_s
+
+            next unless [cls_name].any? { |i| BLOCKQUOTES.include? i }
+
+
+            unless element.attribute('style').nil?
+              element['style'] = element.attribute('style').value.to_s.gsub(/margin:[^;]+/, 'margin: 0 auto')
+            end
+
+          end
+
+          # If adform skip swap
+          src = element["src"]
+          unless src.nil?
+            next if src.include? "adform"
+          end
+
+          # Set iframe src to always HTTPS
+          # Todo: When separated from admin cms, activate this feature again.
+          if element.matches? 'iframe'
+            unless src.nil?
+              if src[0..1] == "//"
+                element['src'] = "https:#{src}"
+              else
+                # just replace http: right of
+                element['src'] = element['src'].gsub('http://', 'https://')
+              end
+            end
+          end
+
+          if element.matches?('blockquote')
+            fig = @doc.create_element('figure')
+            fig['class'] = 'op-interactive'
+            iframe = @doc.create_element('iframe')
+            element.before(fig)
+
+            if element.next_element && element.next_element.matches?('script')
+              script = element.next_element
+              iframe.add_child(element)
+              iframe.add_child(script)
+            else
+              iframe.add_child(element)
+            end
+
+            fig.add_child(iframe)
+            return
+          else
+            next if element.parent.matches? 'figure'
+            element.swap("<figure>#{element.to_html}</figure>")
+          end
+        end
+      end
+
+      figures = @doc.xpath("//figure")
+      figures.each do |f|
+        cls_name = f.attribute("class").nil? ? "" : f.attribute("class").value.to_s
+        if cls_name.include? "op-social"
+          cls_name.gsub!('op-social', 'op-interactive')
+          f['class'] = cls_name
+        end
+        next if cls_name.include? "op-interactive"
+        html = f.inner_html
+        next unless html.include?('iframe') || html.include?('blockquote')
+        if SOCIAL_SERVICES.any? { |service| html.include? service }
+          f['class'] = cls_name.empty? ? "op-interactive" : "#{cls_name} op-interactive"
+        elsif html.include? 'iframe'
+          f['class'] = cls_name.empty? ? "op-interactive" : "#{cls_name} op-interactive"
         end
       end
     end
