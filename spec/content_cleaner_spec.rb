@@ -130,4 +130,14 @@ describe ContentCleaner do
     HTML
     expect(cleaned_content(html)).to eq(cleaned_value(expected))
   end
+
+  it 'shouldnt wrap with iframe and escape content when instagram' do
+    html = <<-HTML
+    <figure class="op-interactive"><blockquote class="instagram-media" data-instgrm-captioned data-instgrm-version="7"><div><p>A post<time></time></p></div></blockquote></figure>
+    HTML
+    expected = <<-HTML
+    <figure class="op-interactive"><blockquote class="instagram-media" data-instgrm-captioned data-instgrm-version="7"><div><p>A post<time></time></p></div></blockquote></figure>
+    HTML
+    expect(cleaned_content(html)).to eq(cleaned_value(expected))
+  end
 end

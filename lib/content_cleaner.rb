@@ -109,7 +109,7 @@ module ContentCleaner
             end
           end
 
-          if element.matches?('blockquote')
+          if element.matches?('blockquote') && element.attribute("class").value.to_s != "instagram-media"
             fig = @doc.create_element('figure')
             fig['class'] = 'op-interactive'
             iframe = @doc.create_element('iframe')
