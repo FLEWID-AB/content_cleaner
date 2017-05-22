@@ -37,6 +37,16 @@ describe ContentCleaner do
     expect(cleaned_content(html1)).to eq(cleaned_value(expected1))
   end
 
+  it 'removes empty paragraphs' do
+    html = <<-HTML
+        <p>Lorem ipsum</p><p></p><p>&nbsp;</p>
+    HTML
+    expected = <<-HTML
+        <p>Lorem ipsum</p>
+    HTML
+    expect(cleaned_content(html)).to eq(cleaned_value(expected))
+  end
+
   it "moves a figure right before the end of a paragraph out of the p tag" do
     html1 = <<-HTML
         <p>
@@ -137,6 +147,16 @@ describe ContentCleaner do
     HTML
     expected = <<-HTML
     <figure class="op-interactive"><blockquote class="instagram-media" data-instgrm-captioned data-instgrm-version="7"><div><p>A post<time></time></p></div></blockquote></figure>
+    HTML
+    expect(cleaned_content(html)).to eq(cleaned_value(expected))
+  end
+
+  it 'surrounds links in figcaption with cite' do
+    html = <<-HTML
+        <figure><figcaption><a>link</a></figcaption></figure>
+    HTML
+    expected = <<-HTML
+        <figure><figcaption><cite><a>link</a></cite></figcaption></figure>
     HTML
     expect(cleaned_content(html)).to eq(cleaned_value(expected))
   end

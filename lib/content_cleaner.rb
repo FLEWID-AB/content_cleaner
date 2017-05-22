@@ -12,6 +12,7 @@ module ContentCleaner
       @doc = Nokogiri::HTML.parse(content)
       clean_content
       clean_figures
+      wrap_links_in_figcaption
     end
 
     def content_html
@@ -154,6 +155,15 @@ module ContentCleaner
       figures = @doc.xpath('//figure/figure')
       figures.each do |f|
         f.parent.swap(f.to_html)
+      end
+    end
+
+    def wrap_links_in_figcaption
+      figcaption_links = @doc.css 'figcaption > a'
+      figcaption_links.each do |link|
+        unless link.parent.matches? 'cite'
+          link.swap("<cite>#{link.to_html}</cite>")
+        end
       end
     end
   end
